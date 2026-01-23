@@ -1,0 +1,8 @@
+.DS_Store
+**/.venv/
+**/node_modules/
+**/__pycache__/
+**/.next/
+**/.git/
+test-output/
+*.pyc
