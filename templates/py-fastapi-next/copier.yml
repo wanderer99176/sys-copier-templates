@@ -1,0 +1,44 @@
+_min_copier_version: "9.0.0"
+
+project_name:
+  type: str
+  help: "项目名称"
+  default: "My Next App"
+
+project_slug:
+  type: str
+  help: "文件夹名称/Slug"
+  default: "{{ project_name | lower | replace(' ', '-') | replace('_', '-') }}"
+
+package_name:
+  type: str
+  help: "Python包名"
+  default: "{{ project_slug | replace('-', '_') }}"
+
+_tasks:
+  # 1. 初始化 Git
+  - "cd {{ project_slug }} && git init"
+  
+  # 2. 安装 Python 依赖
+  - "cd {{ project_slug }} && uv sync --all-extras"
+  
+  # 3. 安装前端依赖
+  - "cd {{ project_slug }}/frontend && npm install"
+
+  # 4. 安装钩子
+  - "cd {{ project_slug }} && pre-commit install"
+
+  # 5. 预跑代码修复
+  - "cd {{ project_slug }} && git add . && pre-commit run --all-files || git add ."
+
+  # 6. 首次提交 (关键：强制提交)
+  - "cd {{ project_slug }} && git commit -m \"Initial commit from Next.js template\" --no-verify"
+
+_exclude:
+  - "copier.yml"
+  - ".git"
+  - ".git/*"
+  - "frontend/node_modules"
+  - "frontend/.next"
+  - ".venv"
+  - "__pycache__"
