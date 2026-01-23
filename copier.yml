@@ -1,0 +1,9 @@
+# 根目录路由配置
+_subdirectory: "templates/{{ template_choice }}"
+
+template_choice:
+  type: str
+  help: "发现多个子模版，请选择要生成的架构："
+  choices:
+    - py-fastapi-next
+    - py-fastapi-react
