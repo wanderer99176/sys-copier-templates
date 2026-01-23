@@ -1,8 +1,19 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from src.{{ package_name }}.api.main import api_router
 from src.{{ package_name }}.core.config import settings
 
-app = FastAPI(title=settings.PROJECT_NAME)
+# 定义生命周期管理器
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 启动时打印显眼的文档链接
+    print(f"\n✨ API Docs: http://localhost:8000/docs\n")
+    yield
+    # 关闭时的逻辑写在这里 (如有)
+
+app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+
+# 注册路由
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
