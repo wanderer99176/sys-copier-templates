@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "{{ project_slug }}-workspace"
+version = "0.1.0"
+description = "FastAPI + React project managed by uv"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "{{ package_name }}",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/{{ package_name }}"]
+
+[tool.uv]
+package = true
+
+[tool.uv.workspace]
+members = ["backend"]
+
+[tool.uv.sources]
+"{{ package_name }}" = { workspace = true }
+
+# --- Typos & Format 配置 ---
+[tool.typos.default]
+locale = "en"
+[tool.typos.files]
+extend-exclude = ["*.json", "*.lock", "uv.lock", "node_modules", ".venv"]
+
+[tool.taplo]
+include = ["pyproject.toml"]
+exclude = ["uv.lock"]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [".git", ".venv", "node_modules"]

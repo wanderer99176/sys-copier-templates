@@ -1,0 +1,31 @@
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+set shell := ["sh", "-c"]
+set dotenv-load
+
+default:
+    @just --list
+
+setup:
+    @echo "📦 Installing dependencies..."
+    uv sync
+    cd frontend; npm install
+    pre-commit install
+
+dev:
+    @echo "🚀 Starting React Full Stack..."
+    docker compose -f docker/docker-compose.yml up -d db
+    npx concurrently -k -n "FRONT,BACK" -c "cyan,green" \
+        "npm run dev --prefix frontend" \
+        "uv run uvicorn src.{{ package_name }}.main:app --app-dir backend --host 0.0.0.0 --port 8000 --reload"
+
+test:
+    uv run pytest backend/tests
+
+clean:
+    @echo "🧹 Cleaning up..."
+    uv clean
+    @if [ "$OS" = "Windows_NT" ]; then \
+        powershell -c "Remove-Item -Recurse -Force .venv, frontend/node_modules -ErrorAction SilentlyContinue"; \
+    else \
+        rm -rf .venv frontend/node_modules; \
+    fi
