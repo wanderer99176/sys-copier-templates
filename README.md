@@ -36,7 +36,7 @@
 
 ```bash
 # 1. 进入你的工具目录
-cd D:\tools
+cd D
 
 # 2. 克隆仓库
 git clone [https://github.com/wanderer99176/sys-copier-templates.git](https://github.com/wanderer99176/sys-copier-templates.git)
