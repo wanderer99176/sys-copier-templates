@@ -1,4 +1,4 @@
-# System Copier Templates (Full Stack)
+﻿# System Copier Templates (Full Stack)
 
 🚀 **个人全栈开发模版集合** | 基于 Python FastAPI, React/Next.js, Docker, uv 和 Just 构建。
 
@@ -37,14 +37,14 @@
 使用 \subdirectory\ 参数指定要使用的模版。
 
 **生成 React 版：**
-\\\ash
+`ash
 copier copy --trust "gh:wanderer99176/sys-copier-templates" ./my-react-app --data subdirectory="templates/py-fastapi-react"
-\\\
+`
 
 **生成 Next.js 版：**
-\\\ash
+`ash
 copier copy --trust "gh:wanderer99176/sys-copier-templates" ./my-next-app --data subdirectory="templates/py-fastapi-next"
-\\\
+`
 
 > **注意**：如果上述命令因网络或版本问题失败，请使用 **方式 B**。
 
@@ -55,18 +55,18 @@ copier copy --trust "gh:wanderer99176/sys-copier-templates" ./my-next-app --data
 如果你需要频繁生成项目，或者网络连接 GitHub 不稳定，建议将此仓库克隆到本地。
 
 1. **克隆仓库**：
-   \\\ash
+   `ash
    git clone https://github.com/wanderer99176/sys-copier-templates.git D:/sys-copier-templates
-   \\\
+   `
 
 2. **从本地生成**：
-   \\\ash
+   `ash
    # React 版
    copier copy --trust "D:/sys-copier-templates/templates/py-fastapi-react" ./my-new-project
 
    # Next.js 版
    copier copy --trust "D:/sys-copier-templates/templates/py-fastapi-next" ./my-new-project
-   \\\
+   `
 
 ---
 
@@ -74,7 +74,7 @@ copier copy --trust "gh:wanderer99176/sys-copier-templates" ./my-next-app --data
 
 无论选择哪个模版，生成的项目都遵循以下标准结构：
 
-\\\	ext
+`	ext
 my-awesome-app/
 ├── backend/                # Python FastAPI 后端
 │   ├── src/                # 源码
@@ -88,7 +88,7 @@ my-awesome-app/
 ├── justfile                # 常用命令入口 (Setup, Dev, Test)
 ├── pyproject.toml          # 根项目配置 (Workspace)
 └── README.md               # 项目说明书
-\\\
+`
 
 ## ⚡ 常用命令 (Justfile)
 
