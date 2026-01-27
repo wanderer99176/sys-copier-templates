@@ -46,7 +46,7 @@ pip install uv
 cd D:\
 
 # 2. 克隆仓库
-git clone [https://github.com/wanderer99176/sys-copier-templates.git](https://github.com/wanderer99176/sys-copier-templates.git)
+git clone https://github.com/wanderer99176/sys-copier-templates.git
 ```
 
 > **💡 提示**：日后若要获取模版更新，只需在该目录下执行 `git pull`。
