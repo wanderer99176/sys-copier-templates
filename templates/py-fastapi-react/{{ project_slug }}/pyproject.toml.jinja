@@ -5,13 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "{{ project_slug }}-workspace"
 version = "0.1.0"
-description = "FastAPI + React project managed by uv"
+description = "Next.js + FastAPI Monorepo managed by uv"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "{{ package_name }}",
 ]
 
+# === 架构核心 ===
 [tool.hatch.build.targets.wheel]
 packages = ["src/{{ package_name }}"]
 
@@ -24,22 +25,75 @@ members = ["backend"]
 [tool.uv.sources]
 "{{ package_name }}" = { workspace = true }
 
-# --- Typos & Format 配置 ---
+# === 工具链配置 (黄金标准) ===
+
+# --- 1. Typos 拼写检查 (适配 Next.js) ---
 [tool.typos.default]
 locale = "en"
+[tool.typos.default.extend-words]
+crate = "crate"
+nd = "nd"
+str = "str"
+ser = "ser"
+out = "out"  # Next.js 静态导出目录
 [tool.typos.files]
-extend-exclude = ["*.json", "*.lock", "uv.lock", "node_modules", ".venv"]
+# [关键] 排除 .next 目录
+extend-exclude = ["*.json", "*.lock", "uv.lock", "node_modules", ".venv", ".next", "out", "build"]
 
+# --- 2. TOML 格式化 ---
 [tool.taplo]
 include = ["pyproject.toml"]
 exclude = ["uv.lock"]
 
+# --- 3. Pyright 类型检查 ---
 [tool.pyright]
 typeCheckingMode = "standard"
 venvPath = "."
 venv = ".venv"
+exclude = ["**/node_modules", "**/__pycache__", ".venv", ".next", "out", "frontend"]
 
+# --- 4. Ruff 核心配置 ---
 [tool.ruff]
+src = ["backend/src"]
 line-length = 88
 target-version = "py312"
-exclude = [".git", ".venv", "node_modules"]
+exclude = [
+    ".git", ".venv", "node_modules", 
+    ".next", "out",  # [关键] Next.js 构建产物
+    "**/__pycache__"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+# 黄金标准规则集
+select = [
+    "E", "W", "F", "I", "UP", "B", "SIM", "N", "C4", "A",
+    "RUF", "T20", "S", "PT", "LOG", "ERA", "T10", "PGH", "TID",
+    "G", "D", "FURB", "PERF", "TRY", "FLY",
+    "TC", "NPY", "PD", "DTZ", "ICN", "PIE", "ASYNC", "FIX", "FA"
+]
+ignore = [
+    "SIM105", "N806", "A003", "S311", "TRY003", "TRY300", "TRY400",
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+    "ISC001", "COM812", "RUF001", "RUF002", "RUF003", "FIX002",
+    "TC001", "TC002", "TC003"
+]
+
+# 开发保护
+unfixable = ["F401", "F841"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"**/*.ipynb" = ["E402", "B018", "T201", "ERA001", "PD901"]
+"**/tests/*" = ["S101", "SLF001", "T201", "PT011", "ERA001", "TRY", "PLR", "D", "ANN"]
+"**/__init__.py" = ["F401", "F403"]

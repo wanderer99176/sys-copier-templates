@@ -1,39 +1,84 @@
 fail_fast: true
 default_install_hook_types: [pre-commit, commit-msg]
-exclude: '(?x)^(uv\.lock|package-lock\.json|node_modules/.*)$'
+
+# [全局排除] 排除 Next.js 构建产物 (.next)
+exclude: |
+    (?x)^(
+        uv\.lock|
+        package-lock\.json|
+        pnpm-lock\.yaml|
+        yarn\.lock|
+        \.vscode/.*|
+        \.idea/.*|
+        \.git/.*|
+        \.tox/.*|
+        \.venv/.*|
+        \.next/.*|
+        out/.*|
+        build/.*|
+        dist/.*|
+        node_modules/.*|
+        frontend/node_modules/.*
+    )$
 
 repos:
+  # --- Stage 0: 基础清洗 ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v5.0.0"
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-toml
+      - id: check-json
       - id: check-added-large-files
+        args: ['--maxkb=2000']
+      - id: detect-private-key # 救命钩子
+      - id: check-merge-conflict
+      - id: check-case-conflict
 
+  # --- Stage 1: 配置校验 ---
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.23"
+    rev: v0.23
     hooks:
       - id: validate-pyproject
+        files: ^pyproject\.toml$
 
-  - repo: https://github.com/ComPWA/taplo-pre-commit
-    rev: "v0.9.3"
+  # --- Stage 2: 格式化 ---
+  - repo: https://github.com/tamasfe/taplo-pre-commit
+    rev: v0.9.3
     hooks:
       - id: taplo-format
+        args: ["--option", "reorder_keys=true"]
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.1.0"
+  - repo: https://github.com/prettier/prettier
+    rev: 3.4.2
     hooks:
       - id: prettier
+        types_or: [json, yaml, markdown, css, javascript, ts, tsx]
 
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.3
+    hooks:
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
+
+  # --- Stage 3: 锁定 ---
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: "0.5.21"
+    rev: 0.5.21
     hooks:
       - id: uv-lock
 
+  # --- Stage 4: 深度检查 ---
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.29.4
+    hooks:
+      - id: typos
+        args: [--write-changes, --force-exclude]
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.9.3"
+    rev: v0.9.3
     hooks:
       - id: ruff
-        args: [--fix]
-      - id: ruff-format
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi, jupyter]
