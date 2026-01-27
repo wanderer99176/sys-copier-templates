@@ -51,11 +51,26 @@ repos:
       - id: taplo-format
         args: ["--option", "reorder_keys=true"]
 
-  - repo: https://github.com/prettier/prettier
-    rev: 3.4.2
+  # [优化] 使用本地 Prettier (Local System Hook)
+  # 优势：速度快、无需下载、与 package.json 版本一致
+  - repo: local
     hooks:
       - id: prettier
-        types_or: [json, yaml, markdown, css, javascript, ts, tsx]
+        name: Prettier (Local)
+        # 使用 npx 自动调用项目 node_modules 里的 prettier
+        entry: npx prettier --write --ignore-unknown
+        language: system
+        types_or: [javascript, jsx, ts, tsx, css, html, json, yaml, markdown]
+        # 排除后端和锁文件，防止从根目录扫描太慢
+        exclude: |
+            (?x)^(
+                uv\.lock|
+                package-lock\.json|
+                pnpm-lock\.yaml|
+                yarn\.lock|
+                backend/.*|
+                docker/.*
+            )$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.3
