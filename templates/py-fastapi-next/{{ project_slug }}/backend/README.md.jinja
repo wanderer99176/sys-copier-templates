@@ -1,0 +1,53 @@
+# {{ package_name }} (Backend Service)
+
+这是 **{{ project_name }}** 的后端 API 服务，基于 [FastAPI](https://fastapi.tiangolo.com/) 构建。
+
+## 📂 目录结构说明
+
+| 路径 | 说明 |
+| :--- | :--- |
+| \src/{{ package_name }}/api\ | **API 路由层**：定义 URL 路径和请求处理逻辑 |
+| \src/{{ package_name }}/core\ | **核心配置**：环境变量 (Config)、安全设置 (Security) |
+| \src/{{ package_name }}/models\ | **数据库模型**：SQLAlchemy / SQLModel 定义 (如有) |
+| \src/{{ package_name }}/schemas\ | **Pydantic 模型**：数据验证与序列化 (DTO) |
+| \	ests/\ | **单元测试**：基于 Pytest 的测试用例 |
+
+## 🚀 开发指南 (Usage)
+
+本项目采用 **Monorepo (UV Workspace)** 架构。虽然这是一个独立的包，但建议在**项目根目录**使用 \just\ 命令进行管理。
+
+### 常用命令
+
+\\\ash
+# 启动后端服务 (热重载模式)
+just dev-backend
+
+# 运行后端测试
+just test
+
+# 代码格式化与检查
+just fmt
+just lint
+\\\
+
+### 📦 依赖管理
+
+由于是 Workspace 模式，添加依赖时需要指定 \--package\ 参数，否则会装到根目录去。
+
+\\\ash
+# 正确：给后端添加 requests 库
+uv add requests --package {{ package_name }}
+
+# 正确：给后端添加开发依赖 (如 pytest-asyncio)
+uv add --dev pytest-asyncio --package {{ package_name }}
+\\\
+
+## ⚙️ 配置 (Configuration)
+
+配置管理使用 \pydantic-settings\。
+服务启动时会自动读取**项目根目录**下的 \.env\ 文件。
+
+关键配置项：
+- \PROJECT_NAME\: 项目名称
+- \API_V1_STR\: API 前缀 (默认 /api/v1)
+- \BACKEND_CORS_ORIGINS\: 允许跨域的前端地址
