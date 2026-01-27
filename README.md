@@ -108,6 +108,12 @@ my-app/
 ---
 
 ## 模版更新通用，上传整个文件
+
+```bash
+# 为避免 HTTPS 认证问题，建议永久切换远程地址到 SSH：（可选）
+git remote set-url origin git@github.com:wanderer99176/sys-copier-templates.git
+```
+
 ```bash
 cd D:\sys-copier-templates
 git add .
