@@ -20,8 +20,14 @@
 ## ⚙️ 环境要求 (Prerequisites)
 
 请确保系统已安装：
-* **[Pipx](https://github.com/pypa/pipx)** & **[Copier](https://copier.readthedocs.io/)**: `pip install pipx; pipx install copier`
-* **[UV](https://github.com/astral-sh/uv)**: `pip install uv`
+* **[Pipx](https://github.com/pypa/pipx)** & **[Copier](https://copier.readthedocs.io/)**: 
+```bash
+pip install pipx; pipx install copier`
+```
+* **[UV](https://github.com/astral-sh/uv)**: 
+```bash
+pip install uv
+```
 * **Docker Desktop**: (必须启动，用于数据库)
 
 ---
@@ -36,7 +42,7 @@
 
 ```bash
 # 1. 进入你的工具目录
-cd D
+cd D:\
 
 # 2. 克隆仓库
 git clone [https://github.com/wanderer99176/sys-copier-templates.git](https://github.com/wanderer99176/sys-copier-templates.git)
