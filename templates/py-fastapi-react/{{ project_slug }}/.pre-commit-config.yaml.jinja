@@ -1,7 +1,7 @@
 fail_fast: true
 default_install_hook_types: [pre-commit, commit-msg]
 
-# [全局排除] 排除 Next.js 构建产物 (.next)
+# [全局排除] 排除锁文件、构建产物和前端依赖
 exclude: |
     (?x)^(
         uv\.lock|
@@ -14,7 +14,6 @@ exclude: |
         \.tox/.*|
         \.venv/.*|
         \.next/.*|
-        out/.*|
         build/.*|
         dist/.*|
         node_modules/.*|
@@ -22,7 +21,7 @@ exclude: |
     )$
 
 repos:
-  # --- Stage 0: 基础清洗 ---
+  # --- Stage 0: 基础语法与元数据 ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -33,18 +32,18 @@ repos:
       - id: check-json
       - id: check-added-large-files
         args: ['--maxkb=2000']
-      - id: detect-private-key # 救命钩子
+      - id: detect-private-key  # [融合] 救命钩子
       - id: check-merge-conflict
       - id: check-case-conflict
 
-  # --- Stage 1: 配置校验 ---
+  # --- Stage 1: 项目配置校验 ---
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
       - id: validate-pyproject
         files: ^pyproject\.toml$
 
-  # --- Stage 2: 格式化 ---
+  # --- Stage 2: 格式化 (Formatters) ---
   - repo: https://github.com/tamasfe/taplo-pre-commit
     rev: v0.9.3
     hooks:
@@ -63,13 +62,13 @@ repos:
       - id: ruff-format
         types_or: [python, pyi, jupyter]
 
-  # --- Stage 3: 锁定 ---
+  # --- Stage 3: 依赖锁定 ---
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.5.21
     hooks:
       - id: uv-lock
 
-  # --- Stage 4: 深度检查 ---
+  # --- Stage 4: 深度检查 (Linters) ---
   - repo: https://github.com/crate-ci/typos
     rev: v1.29.4
     hooks:
@@ -80,5 +79,6 @@ repos:
     rev: v0.9.3
     hooks:
       - id: ruff
+        # 只要有自动修复就报错，强迫开发者 review 修改
         args: [--fix, --exit-non-zero-on-fix]
         types_or: [python, pyi, jupyter]

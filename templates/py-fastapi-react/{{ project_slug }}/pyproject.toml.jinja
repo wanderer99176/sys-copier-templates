@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "{{ project_slug }}-workspace"
 version = "0.1.0"
-description = "Next.js + FastAPI Monorepo managed by uv"
+description = "Modern Monorepo managed by uv"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "{{ package_name }}",
 ]
 
-# === 架构核心 ===
+# === 架构核心 (保留模版逻辑) ===
 [tool.hatch.build.targets.wheel]
 packages = ["src/{{ package_name }}"]
 
@@ -25,20 +25,20 @@ members = ["backend"]
 [tool.uv.sources]
 "{{ package_name }}" = { workspace = true }
 
-# === 工具链配置 (黄金标准) ===
+# === 工具链配置 (融入黄金标准) ===
 
-# --- 1. Typos 拼写检查 (适配 Next.js) ---
+# --- 1. Typos 拼写检查 ---
 [tool.typos.default]
 locale = "en"
 [tool.typos.default.extend-words]
+# 常用白名单
 crate = "crate"
 nd = "nd"
 str = "str"
 ser = "ser"
-out = "out"  # Next.js 静态导出目录
+out = "out"
 [tool.typos.files]
-# [关键] 排除 .next 目录
-extend-exclude = ["*.json", "*.lock", "uv.lock", "node_modules", ".venv", ".next", "out", "build"]
+extend-exclude = ["*.json", "*.lock", "uv.lock", "node_modules", ".venv", ".next", "dist", "build"]
 
 # --- 2. TOML 格式化 ---
 [tool.taplo]
@@ -50,16 +50,28 @@ exclude = ["uv.lock"]
 typeCheckingMode = "standard"
 venvPath = "."
 venv = ".venv"
-exclude = ["**/node_modules", "**/__pycache__", ".venv", ".next", "out", "frontend"]
+# 忽略前端和构建目录
+exclude = ["**/node_modules", "**/__pycache__", ".venv", "build", "dist", "frontend"]
 
-# --- 4. Ruff 核心配置 ---
+# --- 4. Pytest 测试配置 ---
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --import-mode=importlib"
+testpaths = ["backend/tests"]
+pythonpath = ["backend/src"]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore::ResourceWarning",
+]
+
+# --- 5. Ruff 核心配置 (Copier 模版中只写通用规则) ---
 [tool.ruff]
 src = ["backend/src"]
 line-length = 88
 target-version = "py312"
 exclude = [
-    ".git", ".venv", "node_modules", 
-    ".next", "out",  # [关键] Next.js 构建产物
+    ".git", ".venv", "node_modules", ".next", "dist",
     "**/__pycache__"
 ]
 
@@ -68,7 +80,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.ruff.lint]
-# 黄金标准规则集
+# 启用全套规则 (来自旧版黄金标准)
 select = [
     "E", "W", "F", "I", "UP", "B", "SIM", "N", "C4", "A",
     "RUF", "T20", "S", "PT", "LOG", "ERA", "T10", "PGH", "TID",
@@ -82,7 +94,7 @@ ignore = [
     "TC001", "TC002", "TC003"
 ]
 
-# 开发保护
+# [关键] 保护开发体验，防止自动删除未使用的变量
 unfixable = ["F401", "F841"]
 
 [tool.ruff.lint.isort]
@@ -93,6 +105,7 @@ section-order = ["future", "standard-library", "third-party", "first-party", "lo
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+# 针对特定文件的豁免
 [tool.ruff.lint.per-file-ignores]
 "**/*.ipynb" = ["E402", "B018", "T201", "ERA001", "PD901"]
 "**/tests/*" = ["S101", "SLF001", "T201", "PT011", "ERA001", "TRY", "PLR", "D", "ANN"]

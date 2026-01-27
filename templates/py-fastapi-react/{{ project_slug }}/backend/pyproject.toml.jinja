@@ -7,12 +7,21 @@ name = "{{ package_name }}"
 version = "0.1.0"
 description = "Backend service for {{ project_name }}"
 readme = "README.md"
+# [关键] 必须与根目录保持一致或兼容
 requires-python = ">=3.12"
+
+# [关键] 只列出运行时依赖 (开发工具如 ruff 放在根目录)
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
     "pydantic-settings>=2.1.0",
+    # 如果有数据库，可以在这里加 "sqlalchemy", "alembic" 等
 ]
 
+# [架构核心] 告诉构建工具去哪里找源码
 [tool.hatch.build.targets.wheel]
 packages = ["src/{{ package_name }}"]
+
+# [可选] 如果你想让这个包被当作一个库引用，可以加这行，但在微服务里通常不需要
+# [tool.uv]
+# package = true
