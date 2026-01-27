@@ -22,7 +22,8 @@
 请确保系统已安装：
 * **[Pipx](https://github.com/pypa/pipx)** & **[Copier](https://copier.readthedocs.io/)**: 
 ```bash
-pip install pipx; pipx install copier`
+pip install pipx
+pipx install copier
 ```
 * **[UV](https://github.com/astral-sh/uv)**: 
 ```bash
