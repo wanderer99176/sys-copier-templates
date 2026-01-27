@@ -44,12 +44,13 @@ repos:
       - id: validate-pyproject
         files: ^pyproject\.toml$
 
-  # --- Stage 2: 格式化 ---
-  - repo: https://github.com/tamasfe/taplo
+  # --- Stage 2: 格式化 (Formatters) ---
+  # 为了适配 pre-commit 而维护的镜像
+  - repo: https://github.com/ComPWA/taplo-pre-commit
     rev: v0.9.3
     hooks:
-      - id: taplo
-        args: ["format", "--option", "reorder_keys=true"]
+      - id: taplo-format
+        args: ["--option", "reorder_keys=true"]
 
   - repo: https://github.com/prettier/prettier
     rev: 3.4.2

@@ -20,13 +20,17 @@
 ## ⚙️ 环境要求 (Prerequisites)
 
 请确保系统已安装：
-* **[Pipx](https://github.com/pypa/pipx)** & **[Copier](https://copier.readthedocs.io/)**: 
+* **[Pipx](https://github.com/pypa/pipx)** & **[Copier](https://copier.readthedocs.io/)** & **[UV](https://github.com/astral-sh/uv)**: 
 ```bash
+# 验证
+pipx --version
+copier --version
+uv --version
+```
+```bash
+# 安装
 pip install pipx
 pipx install copier
-```
-* **[UV](https://github.com/astral-sh/uv)**: 
-```bash
 pip install uv
 ```
 * **Docker Desktop**: (必须启动，用于数据库)
