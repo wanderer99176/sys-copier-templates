@@ -107,6 +107,16 @@ my-app/
 
 ---
 
+## 模版更新通用，上传整个文件
+```bash
+cd D:\sys-copier-templates
+git add .
+git commit -m "add all $(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss')"
+git push origin main
+```
+
+---
+
 ## 📝 License
 
 [MIT](https://opensource.org/licenses/MIT) © [wanderer](mailto:gbk2667503771@gmail.com)
