@@ -45,11 +45,11 @@ repos:
         files: ^pyproject\.toml$
 
   # --- Stage 2: 格式化 ---
-  - repo: https://github.com/tamasfe/taplo-pre-commit
+  - repo: https://github.com/tamasfe/taplo
     rev: v0.9.3
     hooks:
-      - id: taplo-format
-        args: ["--option", "reorder_keys=true"]
+      - id: taplo
+        args: ["format", "--option", "reorder_keys=true"]
 
   - repo: https://github.com/prettier/prettier
     rev: 3.4.2
