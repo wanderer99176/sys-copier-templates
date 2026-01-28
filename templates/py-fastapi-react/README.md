@@ -1,11 +1,3 @@
-好的，根据您最新的需求，我们将放弃之前“每个模版一个独立仓库”的做法，转而在 **Mono-repo (单仓库)** `sys-copier-templates` 的 `templates/` 目录下直接构建子模版。
-
-这意味着所有的 `git init`、`git commit` 等操作都只需在 **根目录** (`D:\sys-copier-templates`) 进行一次，子模版目录里不需要（也不能）再初始化 Git。
-
-以下是为您量身定制的 **py-fastapi-react 子模版构建指南 (Mono-repo 版)**。
-
----
-
 # Copier 子模版制作指南 (py-fastapi-react)
 
 **目标**：在 `sys-copier-templates` 仓库中，构建一个 **Vite (React) + FastAPI** 的全栈模版。
@@ -90,7 +82,7 @@ $copierContent | Out-File -Encoding utf8 "copier.yml"
 mkdir "{{ project_slug }}" -Force
 cd "{{ project_slug }}"
 
-# --- A. pyproject.toml (Workspace 修复版) ---
+# --- A. pyproject.toml (融合黄金标准版) ---
 $pyprojectContent = @'
 [build-system]
 requires = ["hatchling"]
@@ -99,13 +91,14 @@ build-backend = "hatchling.build"
 [project]
 name = "{{ project_slug }}-workspace"
 version = "0.1.0"
-description = "FastAPI + React project managed by uv"
+description = "Modern Monorepo managed by uv"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "{{ package_name }}",
 ]
 
+# === 架构核心 (保留模版逻辑) ===
 [tool.hatch.build.targets.wheel]
 packages = ["src/{{ package_name }}"]
 
@@ -118,69 +111,196 @@ members = ["backend"]
 [tool.uv.sources]
 "{{ package_name }}" = { workspace = true }
 
-# --- Typos & Format 配置 ---
+# === 工具链配置 (融入黄金标准) ===
+
+# --- 1. Typos 拼写检查 ---
 [tool.typos.default]
 locale = "en"
+[tool.typos.default.extend-words]
+# 常用白名单
+crate = "crate"
+nd = "nd"
+str = "str"
+ser = "ser"
+out = "out"
 [tool.typos.files]
-extend-exclude = ["*.json", "*.lock", "uv.lock", "node_modules", ".venv"]
+extend-exclude = ["*.json", "*.lock", "uv.lock", "node_modules", ".venv", ".next", "dist", "build"]
 
+# --- 2. TOML 格式化 ---
 [tool.taplo]
 include = ["pyproject.toml"]
 exclude = ["uv.lock"]
 
+# --- 3. Pyright 类型检查 ---
 [tool.pyright]
 typeCheckingMode = "standard"
 venvPath = "."
 venv = ".venv"
+# 忽略前端和构建目录
+exclude = ["**/node_modules", "**/__pycache__", ".venv", "build", "dist", "frontend"]
 
+# --- 4. Pytest 测试配置 ---
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --import-mode=importlib"
+testpaths = ["backend/tests"]
+pythonpath = ["backend/src"]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore::ResourceWarning",
+]
+
+# --- 5. Ruff 核心配置 (Copier 模版中只写通用规则) ---
 [tool.ruff]
+src = ["backend/src"]
 line-length = 88
 target-version = "py312"
-exclude = [".git", ".venv", "node_modules"]
+exclude = [
+    ".git", ".venv", "node_modules", ".next", "dist",
+    "**/__pycache__"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+# 启用全套规则 (来自旧版黄金标准)
+select = [
+    "E", "W", "F", "I", "UP", "B", "SIM", "N", "C4", "A",
+    "RUF", "T20", "S", "PT", "LOG", "ERA", "T10", "PGH", "TID",
+    "G", "D", "FURB", "PERF", "TRY", "FLY",
+    "TC", "NPY", "PD", "DTZ", "ICN", "PIE", "ASYNC", "FIX", "FA"
+]
+ignore = [
+    "SIM105", "N806", "A003", "S311", "TRY003", "TRY300", "TRY400",
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+    "ISC001", "COM812", "RUF001", "RUF002", "RUF003", "FIX002",
+    "TC001", "TC002", "TC003"
+]
+
+# [关键] 保护开发体验，防止自动删除未使用的变量
+unfixable = ["F401", "F841"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# 针对特定文件的豁免
+[tool.ruff.lint.per-file-ignores]
+"**/*.ipynb" = ["E402", "B018", "T201", "ERA001", "PD901"]
+"**/tests/*" = ["S101", "SLF001", "T201", "PT011", "ERA001", "TRY", "PLR", "D", "ANN"]
+"**/__init__.py" = ["F401", "F403"]
 '@
 $pyprojectContent | Out-File -Encoding utf8 "pyproject.toml.jinja"
 
-# --- B. .pre-commit-config.yaml ---
+# --- B. .pre-commit-config.yaml (融合黄金标准版) ---
 $preCommitContent = @'
 fail_fast: true
 default_install_hook_types: [pre-commit, commit-msg]
-exclude: '(?x)^(uv\.lock|package-lock\.json|node_modules/.*)$'
+
+# [全局排除] 排除锁文件、构建产物和前端依赖
+exclude: |
+    (?x)^(
+        uv\.lock|
+        package-lock\.json|
+        pnpm-lock\.yaml|
+        yarn\.lock|
+        \.vscode/.*|
+        \.idea/.*|
+        \.git/.*|
+        \.tox/.*|
+        \.venv/.*|
+        \.next/.*|
+        build/.*|
+        dist/.*|
+        node_modules/.*|
+        frontend/node_modules/.*
+    )$
 
 repos:
+  # --- Stage 0: 基础语法与元数据 ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v5.0.0"
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-toml
+      - id: check-json
       - id: check-added-large-files
+        args: ['--maxkb=2000']
+      - id: detect-private-key  # [融合] 救命钩子
+      - id: check-merge-conflict
+      - id: check-case-conflict
 
+  # --- Stage 1: 项目配置校验 ---
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.23"
+    rev: v0.23
     hooks:
       - id: validate-pyproject
+        files: ^pyproject\.toml$
 
+  # --- Stage 2: 格式化 (Formatters) ---
+  # 为了适配 pre-commit 而维护的镜像
   - repo: https://github.com/ComPWA/taplo-pre-commit
-    rev: "v0.9.3"
+    rev: v0.9.3
     hooks:
       - id: taplo-format
+        args: ["--option", "reorder_keys=true"]
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.1.0"
+  # [优化] 使用本地 Prettier (Local System Hook)
+  # 优势：速度快、无需下载、与 package.json 版本一致
+  - repo: local
     hooks:
       - id: prettier
+        name: Prettier (Local)
+        # 使用 npx 自动调用项目 node_modules 里的 prettier
+        entry: npx prettier --write --ignore-unknown
+        language: system
+        types_or: [javascript, jsx, ts, tsx, css, html, json, yaml, markdown]
+        # 排除后端和锁文件，防止从根目录扫描太慢
+        exclude: |
+            (?x)^(
+                uv\.lock|
+                package-lock\.json|
+                pnpm-lock\.yaml|
+                yarn\.lock|
+                backend/.*|
+                docker/.*
+            )$
 
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.3
+    hooks:
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
+
+  # --- Stage 3: 依赖锁定 ---
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: "0.5.21"
+    rev: 0.5.21
     hooks:
       - id: uv-lock
 
+  # --- Stage 4: 深度检查 (Linters) ---
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.29.4
+    hooks:
+      - id: typos
+        args: [--write-changes, --force-exclude]
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.9.3"
+    rev: v0.9.3
     hooks:
       - id: ruff
-        args: [--fix]
-      - id: ruff-format
+        # 只要有自动修复就报错，强迫开发者 review 修改
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi, jupyter]
 '@
 $preCommitContent | Out-File -Encoding utf8 ".pre-commit-config.yaml.jinja"
 
@@ -267,6 +387,64 @@ mkdir "backend/src/{{ package_name }}/api" -Force
 mkdir "backend/src/{{ package_name }}/core" -Force
 mkdir "backend/tests" -Force
 
+# 1.5 [增强] 创建详细的 Backend README (中文版)
+$backendReadme = @"
+# {{ package_name }} (Backend Service)
+
+这是 **{{ project_name }}** 的后端 API 服务，基于 [FastAPI](https://fastapi.tiangolo.com/) 构建。
+
+## 📂 目录结构说明
+
+| 路径 | 说明 |
+| :--- | :--- |
+| \`src/{{ package_name }}/api\` | **API 路由层**：定义 URL 路径和请求处理逻辑 |
+| \`src/{{ package_name }}/core\` | **核心配置**：环境变量 (Config)、安全设置 (Security) |
+| \`src/{{ package_name }}/models\` | **数据库模型**：SQLAlchemy / SQLModel 定义 (如有) |
+| \`src/{{ package_name }}/schemas\` | **Pydantic 模型**：数据验证与序列化 (DTO) |
+| \`tests/\` | **单元测试**：基于 Pytest 的测试用例 |
+
+## 🚀 开发指南 (Usage)
+
+本项目采用 **Monorepo (UV Workspace)** 架构。虽然这是一个独立的包，但建议在**项目根目录**使用 \`just\` 命令进行管理。
+
+### 常用命令
+
+\`\`\`bash
+# 启动后端服务 (热重载模式)
+just dev-backend
+
+# 运行后端测试
+just test
+
+# 代码格式化与检查
+just fmt
+just lint
+\`\`\`
+
+### 📦 依赖管理
+
+由于是 Workspace 模式，添加依赖时需要指定 \`--package\` 参数，否则会装到根目录去。
+
+\`\`\`bash
+# 正确：给后端添加 requests 库
+uv add requests --package {{ package_name }}
+
+# 正确：给后端添加开发依赖 (如 pytest-asyncio)
+uv add --dev pytest-asyncio --package {{ package_name }}
+\`\`\`
+
+## ⚙️ 配置 (Configuration)
+
+配置管理使用 \`pydantic-settings\`。
+服务启动时会自动读取**项目根目录**下的 \`.env\` 文件。
+
+关键配置项：
+- \`PROJECT_NAME\`: 项目名称
+- \`API_V1_STR\`: API 前缀 (默认 /api/v1)
+- \`BACKEND_CORS_ORIGINS\`: 允许跨域的前端地址
+"@
+$backendReadme | Out-File -Encoding utf8 "backend/README.md.jinja"
+
 # 2. Config
 $configPy = @"
 from pydantic_settings import BaseSettings
@@ -315,22 +493,35 @@ def root():
     return {"message": "Welcome to {{ project_name }} API"}
 '@
 
-# 5. Backend pyproject.toml
+# 5. Backend pyproject.toml (Monorepo 专用瘦身版)
 $backendToml = @"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "{{ package_name }}"
 version = "0.1.0"
+description = "Backend service for {{ project_name }}"
+readme = "README.md"
+# [关键] 必须与根目录保持一致或兼容
 requires-python = ">=3.12"
+
+# [关键] 只列出运行时依赖 (开发工具如 ruff 放在根目录)
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
     "pydantic-settings>=2.1.0",
+    # 如果有数据库，可以在这里加 "sqlalchemy", "alembic" 等
 ]
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+
+# [架构核心] 告诉构建工具去哪里找源码
 [tool.hatch.build.targets.wheel]
 packages = ["src/{{ package_name }}"]
+
+# [可选] 如果你想让这个包被当作一个库引用，可以加这行，但在微服务里通常不需要
+# [tool.uv]
+# package = true
 "@
 $backendToml | Out-File -Encoding utf8 "backend/pyproject.toml.jinja"
 
@@ -356,7 +547,18 @@ Move-Item -Path "temp-frontend/*" -Destination "frontend/" -Force
 Move-Item -Path "temp-frontend/.*" -Destination "frontend/" -Force -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force temp-frontend
 
-# 3. 环境变量
+# 强制注入 Prettier 到 package.json
+# 目的：确保生成的项目 package.json 中包含 "prettier": "^3.x.x"
+cd frontend
+# 3.1 安装 Prettier (这会自动更新 package.json)
+npm install --save-dev prettier
+# 3.2 【关键】删除生成的 node_modules
+# 原因：我们只需要 package.json 里的记录，不需要模版里留着几百兆的依赖包
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+cd ..
+
+
+# 4. 环境变量
 "VITE_API_URL=http://localhost:8000" | Out-File -Encoding utf8 "frontend/.env.development"
 ```
 
@@ -441,15 +643,17 @@ Remove-Item -Recurse -Force my-react-test -ErrorAction SilentlyContinue
 # 既然我们是本地测试，直接把源路径写深一层到模版所在的目录
 copier copy --trust "./sys-copier-templates/templates/py-fastapi-react" ./my-react-test
 
-# 3. 启动docker(后端前提)
+# 3. 启动docker(后端前提)（等待5s启动建议）
 & "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 
 # 4. 启动验证
-cd my-react-test/my-awesome-app
+cd D:\my-react-app\my-awesome-app
 just dev
 ```
 
 **预期结果**：
 
-- 后端：`http://localhost:8000/docs` (Swagger)
-- 前端：`http://localhost:5173` (Vite React 页面)
+- 后端： http://localhost:8000/docs
+	- (Swagger)
+- 前端： http://localhost:5173
+	- (Vite React 页面)

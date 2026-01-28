@@ -1,8 +1,4 @@
-好的，没问题。我们将按照您梳理的 **Mono-repo (单仓库多模版)** 逻辑，一步步来执行。
-
-这是 **第 1 步：创建 `sys-copier-templates` 仓库结构并同步云端** 的执行指南。
-
----
+创建 `sys-copier-templates` 仓库结构并同步云端** 的执行指南。
 
 # 第 1 步：构建 Mono-repo 地基 (sys-copier-templates)
 
@@ -100,10 +96,10 @@ cd D:\sys-copier-templates
 
 ## 2.1 全站模版：
 
-1. 模版：py-fastapi-react模版：[[v10.0 Copier 子模版1制作指南 (py-fastapi-react)]]
+1. 模版：py-fastapi-react模版：[[v10.1 Copier 子模版1制作指南 (py-fastapi-react)]]
 此脚本将在 `templates/py-fastapi-react` 目录下构建 **FastAPI + React (Vite)** 模版。
 
-2. 模版：py-fastapi-next模版：[[v10.0 Copier 子模版2制作指南 (py-fastapi-next)]]
+2. 模版：py-fastapi-next模版：[[v10.1 Copier 子模版2制作指南 (py-fastapi-next)]]
 此脚本将在 `templates/py-fastapi-next` 目录下构建 **FastAPI + Next.js** 模版。
 
 
@@ -156,7 +152,7 @@ $readmeContent = @'
 
 ```bash
 # 1. 进入你的工具目录
-cd D
+cd D：
 
 # 2. 克隆仓库
 git clone [https://github.com/wanderer99176/sys-copier-templates.git](https://github.com/wanderer99176/sys-copier-templates.git)
@@ -239,6 +235,18 @@ git add README.md
 git commit -m "Docs: Update usage guide to robust Clone-First strategy"
 git push origin main
 ````
+- 其他更新通用，上传整个文件
+```shell
+# 为避免 HTTPS 认证问题，建议永久切换远程地址到 SSH：（可选）
+git remote set-url origin git@github.com:wanderer99176/sys-copier-templates.git
+```
+
+```bash
+cd D:\sys-copier-templates
+git add .
+git commit -m "add all $(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss')"
+git push origin main
+```
 
 ---
 
@@ -264,3 +272,4 @@ copier copy --trust "./sys-copier-templates/templates/py-fastapi-react" ./my-rea
 ## 3.4 通过网站流程测试效果
 
 打开 https://github.com/wanderer99176/sys-copier-templates 测试生成的最终效果
+
