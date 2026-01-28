@@ -2,30 +2,120 @@ set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 set shell := ["sh", "-c"]
 set dotenv-load
 
+# 默认执行 listing
 default:
     @just --list
 
-setup:
-    @echo "📦 Installing dependencies..."
-    uv sync
-    cd frontend; npm install
-    pre-commit install
+# =================================================================
+# 🛠️ 初始化与环境 (Setup)
+# =================================================================
 
+setup:
+    @echo "📦 正在初始化环境 (Installing dependencies)..."
+    # 1. 检查 Docker (兼容 PowerShell 和 Sh)
+    @if (Get-Command docker -ErrorAction SilentlyContinue) { docker info > $null 2>&1; if ($LASTEXITCODE -ne 0) { echo "⚠️ Docker is NOT running!"; exit 1 } else { echo "✅ Docker is running" } }
+    # 2. 安装后端依赖
+    uv sync
+    # 3. 安装前端依赖
+    cd frontend; npm install
+    # 4. 安装 Git 钩子
+    pre-commit install
+    @echo "🎉 环境初始化完成! 请运行 'just dev' 启动项目。"
+
+# =================================================================
+# 🚀 核心命令 (Core)
+# =================================================================
+
+# 🚀 启动：一键跑起前后端
 dev:
-    @echo "🚀 Starting React Full Stack..."
+    @echo "🚀 正在启动全栈开发环境..."
+    # 1. 后台启动 Docker 数据库
     docker compose -f docker/docker-compose.yml up -d db
+    # 2. 并行启动：前端(Vite/React) + 后端(FastAPI/Uvicorn)
+    # 注意：backend 目录下的 main:app
     npx concurrently -k -n "FRONT,BACK" -c "cyan,green" \
         "npm run dev --prefix frontend" \
         "uv run uvicorn src.{{ package_name }}.main:app --app-dir backend --host 0.0.0.0 --port 8000 --reload"
 
+# 🧪 测试：运行后端 pytest
 test:
+    @echo "🧪 正在运行后端测试..."
     uv run pytest backend/tests
 
+# 🧹 清理：删掉环境和依赖
+# [优化] 使用 Python 进行跨平台删除，避免 Shell/PowerShell 语法冲突
 clean:
-    @echo "🧹 Cleaning up..."
+    @echo "🧹 正在清理环境..."
     uv clean
-    @if [ "$OS" = "Windows_NT" ]; then \
-        powershell -c "Remove-Item -Recurse -Force .venv, frontend/node_modules -ErrorAction SilentlyContinue"; \
-    else \
-        rm -rf .venv frontend/node_modules; \
-    fi
+    uv run python -c "import shutil, os; targets=['.venv', 'frontend/node_modules']; [shutil.rmtree(t, ignore_errors=True) for t in targets]; print('✅ Cleaned')"
+
+# =================================================================
+# 🧹 代码质量 (Quality Assurance)
+# =================================================================
+
+# 格式化代码 (后端 Ruff + 前端 Prettier)
+fmt:
+    uv run ruff format backend/src
+    uv run ruff check --select I --fix backend/src
+    cd frontend; npx prettier --write . --ignore-unknown
+
+# 代码检查 (不自动修复)
+lint:
+    uv run ruff check backend/src
+    cd frontend; npm run lint
+
+# 更新所有依赖 (每周维护用)
+update:
+    @echo "🔄 Updating dependencies..."
+    uv lock --upgrade
+    uv sync
+    pre-commit autoupdate
+    @echo "✅ Dependencies updated!"
+
+# =================================================================
+# 🏗️ 日常开发工作流 (V2.0 Pro)
+# 注意: 下面的 {% raw %} 是为了保护 just 变量不被 Copier 误解析
+# =================================================================
+{% raw %}
+
+# [快存] 新建提交 (自动格式化 + 提交)
+# 用法: just save "feat: add login api"
+save message: fmt
+    @echo "💾 [New] 正在存档..."
+    git add .
+    git commit -m "{{message}}"
+
+# [修正] 追加提交 (合并到上一次 commit，不产生新记录)
+# 用法: just amend
+# 场景: 刚才提交了，但发现漏改了一行代码，或者 typo
+amend: fmt
+    @echo "🩹 [Fix] 正在修正上一次提交..."
+    git add .
+    git commit --amend --no-edit
+
+# [发版] 全量检查 + 推送 (质量守门员)
+# 用法: just ship
+ship: lint test
+    @echo "🚢 正在发版 (Lint + Test + Push)..."
+    git push
+    @echo "✅ 代码已推送到云端!"
+
+# [数据库] 生成迁移脚本 (当修改了 models.py 后)
+# 用法: just db-gen "add user age column"
+# [优化] 先 cd backend 确保能找到 alembic.ini
+db-gen message:
+    @echo "🐘 生成数据库版本文件..."
+    cd backend; uv run alembic revision --autogenerate -m "{{message}}"
+
+# [数据库] 应用变更 (升级数据库到最新)
+# [优化] 先 cd backend 确保能找到 alembic.ini
+db-up:
+    @echo "🐘 正在升级数据库结构..."
+    cd backend; uv run alembic upgrade head
+
+# [测试] 监听模式 (保存文件即运行测试)
+# 需安装 pytest-watch (ptw)
+test-watch:
+    uv run ptw backend/tests
+
+{% endraw %}
